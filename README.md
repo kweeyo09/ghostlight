@@ -1,4 +1,4 @@
-# Ghostlight — Theatre Log
+# Limelight — Theatre Log
 
 A theatrical, animated web page for logging West End shows you've seen. Ticket-stub
 "stamps" sit under a round spotlight against a softly swaying red stage curtain.
