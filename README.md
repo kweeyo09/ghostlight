@@ -3,18 +3,6 @@
 A theatrical, animated web page for logging West End shows you've seen. Ticket-stub
 "stamps" sit under a round spotlight against a softly swaying red stage curtain.
 
-## Features
-
-- **Swaying curtain** — 16 procedurally laid-out folds that breathe idly and lean
-  toward the cursor (`requestAnimationFrame` loop, distance-weighted influence).
-- **Round spotlight** — a pulsing warm glow plus a matching vignette that darkens
-  the edges of the stage.
-- **Draggable ticket stamps** — five shows (The Lion King, The Phantom of the Opera,
-  Wicked, Les Misérables, Mamma Mia!) rendered as perforated paper stubs with
-  hand-built CSS artwork. Drag any stamp; it raises to the top of the stack.
-- **Full-page search** — tap the magnifier to open an immersive search overlay;
-  close with Esc or by clicking anywhere outside the field.
-
 ## Running
 
 It's a single static file — no build step, no dependencies.
