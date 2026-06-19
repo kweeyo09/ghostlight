@@ -50,15 +50,6 @@ body {
   background: var(--desk);
 }
 
-/* three.js ambient layer sits behind everything */
-.ambient-canvas {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  display: block;
-}
-
 /* ---- valance ---- */
 .valance {
   position: absolute;

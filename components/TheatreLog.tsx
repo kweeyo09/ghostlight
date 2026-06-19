@@ -9,7 +9,6 @@ import {
   useState,
 } from "react";
 import type { Show } from "@/lib/shows";
-import AmbientCanvas from "./AmbientCanvas";
 
 interface Stamp {
   x: number;
@@ -172,8 +171,6 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
 
   return (
     <div className="stage">
-      <AmbientCanvas />
-
       {/* ===== valance ===== */}
       <div className="valance">
         <div className="valance-bar">

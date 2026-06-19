@@ -1,17 +1,14 @@
 # Limelight — Theatre Log
 
 A theatre log of West End shows seen, kept as draggable ticket stubs on a
-curtained stage. Built with **Next.js** (App Router, server API routes), a
-**three.js** GPU ambient layer, and the paper-cut "Limelight" UI from the
-Claude Design source.
+curtained stage. Built with **Next.js** (App Router, server API routes) and the
+paper-cut "Limelight" UI from the Claude Design source.
 
 ## Stack
 
 - **Next.js 16** (App Router) — SSR page + serverless API routes (the backend).
-- **React 19** — interactive client UI (`components/TheatreLog.tsx`).
-- **three.js** — `components/AmbientCanvas.tsx` renders slow-drifting dust motes
-  entirely on the GPU, so the continuous ambient motion costs almost no
-  main-thread time and the DOM curtains/tickets stay responsive.
+- **React 19** — interactive client UI (`components/TheatreLog.tsx`): the
+  cursor-reactive curtains, draggable ticket stubs, and live search overlay.
 
 ## Architecture
 
@@ -25,7 +22,6 @@ app/
     search/route.ts   GET /api/search?q=…    → filtered results
 components/
   TheatreLog.tsx      client UI: curtains, draggable stubs, live search
-  AmbientCanvas.tsx   three.js ambient dust layer
 lib/
   shows.ts            data layer (single source of truth; swap for a DB later)
 ```
