@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Bodoni+Moda:ital,opsz,wght@0,6..96,400..900;1,6..96,400..700&family=Spline+Sans+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; }
+    html, body { margin:0; padding:0; height:100%; background:#e7e1d3; overflow:hidden; }
+    @keyframes gl-fade { from{ opacity:0 } to{ opacity:1 } }
+    @keyframes gl-rise { from{ opacity:0; transform:translateY(16px) } to{ opacity:1; transform:translateY(0) } }
+  </style>
+</helmet>
+<div style="position:fixed; inset:0; overflow:hidden; background:{{ desk }}; font-family:'Spline Sans Mono', ui-monospace, monospace;">
+
+  <!-- ============ PAPER-CUT VALANCE (top swag) ============ -->
+  <sc-if value="{{ showCurtains }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute; top:0; left:0; right:0; z-index:3; pointer-events:none;">
+    <div style="position:relative; height:74px; background:linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%); box-shadow:0 5px 14px rgba(60,24,8,.22); display:flex; align-items:center; justify-content:center;">
+      <div style="font-family:'Bodoni Moda', Georgia, serif; font-weight:700; font-size:46px; line-height:1; color:#f6ead2; letter-spacing:.015em; text-shadow:0 1px 3px rgba(50,18,4,.45);">Limelight</div>
+    </div>
+    <div style="display:flex; align-items:flex-start; height:60px;">
+      <sc-for list="{{ swags }}" as="s" hint-placeholder-count="11">
+        <div style="{{ s.style }}"></div>
+      </sc-for>
+    </div>
+  </div>
+  </sc-if>
+
+  <!-- ============ PAPER-CUT SIDE CURTAINS (fully drawn) ============ -->
+  <sc-if value="{{ showCurtains }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute; top:0; bottom:0; left:0; width:52vw; display:flex; align-items:flex-start; z-index:1; pointer-events:none; filter:drop-shadow(8px 0 22px rgba(60,24,8,.26));">
+    <sc-for list="{{ leftPleats }}" as="p" hint-placeholder-count="6">
+      <div data-pleat="1" data-rot="{{ p.rot }}" style="{{ p.style }}"></div>
+    </sc-for>
+  </div>
+  <div style="position:absolute; top:0; bottom:0; right:0; width:52vw; display:flex; align-items:flex-start; z-index:1; pointer-events:none; filter:drop-shadow(-8px 0 22px rgba(60,24,8,.26));">
+    <sc-for list="{{ rightPleats }}" as="p" hint-placeholder-count="6">
+      <div data-pleat="1" data-rot="{{ p.rot }}" style="{{ p.style }}"></div>
+    </sc-for>
+  </div>
+  <!-- center seam shadow where the two drapes meet -->
+  <div style="position:absolute; top:0; bottom:0; left:50%; transform:translateX(-50%); width:80px; z-index:1; pointer-events:none; background:linear-gradient(90deg, rgba(40,16,4,0) 0%, rgba(40,16,4,.34) 50%, rgba(40,16,4,0) 100%);"></div>
+  </sc-if>
+
+  <!-- ============ SPOTLIGHT ============ -->
+  <sc-if value="{{ showSpot }}" hint-placeholder-val="{{ true }}">
+  <!-- circular pool of light aimed at the stamps -->
+  <div style="position:absolute; inset:0; z-index:2; pointer-events:none; background:radial-gradient(circle 30vw at 50% 52%, rgba(255,240,206,.52) 0%, rgba(255,238,200,.26) 46%, rgba(255,236,196,0) 70%); mix-blend-mode:screen;"></div>
+  </sc-if>
+
+  <!-- ============ SPOTLIGHT VIGNETTE (dims everything but the lit stage) ============ -->
+  <sc-if value="{{ showSpot }}" hint-placeholder-val="{{ true }}">
+  <div style="position:absolute; inset:0; z-index:5; pointer-events:none; background:radial-gradient(circle 36vw at 50% 52%, rgba(16,8,2,0) 0%, rgba(16,8,2,0) 40%, rgba(16,8,2,.52) 80%, rgba(12,6,2,.76) 100%);"></div>
+  </sc-if>
+
+  <!-- ============ TICKET STUBS ============ -->
+  <div style="position:fixed; left:50%; top:55%; transform:translate(-50%,-50%); width:680px; height:500px; z-index:6;">
+    <sc-for list="{{ tickets }}" as="t" hint-placeholder-count="5">
+      <div style="{{ t.st }}" onPointerDown="{{ t.pd }}">
+        <div style="background:#f7f3ea; padding:0; -webkit-mask-image:radial-gradient(5px at 50% 0,#0000 98%,#000),radial-gradient(5px at 50% 100%,#0000 98%,#000),radial-gradient(5px at 0 50%,#0000 98%,#000),radial-gradient(5px at 100% 50%,#0000 98%,#000); mask-image:radial-gradient(5px at 50% 0,#0000 98%,#000),radial-gradient(5px at 50% 100%,#0000 98%,#000),radial-gradient(5px at 0 50%,#0000 98%,#000),radial-gradient(5px at 100% 50%,#0000 98%,#000); -webkit-mask-position:0 0,0 100%,0 0,100% 0; mask-position:0 0,0 100%,0 0,100% 0; -webkit-mask-size:18px 100%,18px 100%,100% 18px,100% 18px; mask-size:18px 100%,18px 100%,100% 18px,100% 18px; -webkit-mask-repeat:repeat-x,repeat-x,repeat-y,repeat-y; mask-repeat:repeat-x,repeat-x,repeat-y,repeat-y; -webkit-mask-composite:source-in; mask-composite:intersect;">
+          <div style="padding:13px 16px 15px;">
+            <div style="display:flex; justify-content:space-between; align-items:baseline; font-family:'Spline Sans Mono',monospace; font-size:8px; letter-spacing:.24em; color:#9a9082;">
+              <span>ADMIT ONE</span>
+              <span style="color:{{ t.accent }}; font-weight:600;">{{ t.serial }}</span>
+            </div>
+            <div style="height:2px; background:{{ t.accent }}; margin-top:9px;"></div>
+            <div style="height:1px; background:rgba(36,31,26,.16); margin-top:2px;"></div>
+            <div style="display:flex; align-items:center; justify-content:center; min-height:58px; padding:15px 2px 9px;">
+              <div style="font-family:'Bodoni Moda', Georgia, serif; font-weight:700; font-size:22px; line-height:1.04; color:#241f1a; text-align:center; text-wrap:balance;">{{ t.title }}</div>
+            </div>
+            <div style="text-align:center; font-family:'Spline Sans Mono',monospace; font-size:8.5px; letter-spacing:.2em; color:#5e5446; text-transform:uppercase; margin-top:4px;">{{ t.theatre }}</div>
+            <div style="text-align:center; font-family:'Spline Sans Mono',monospace; font-size:7.5px; letter-spacing:.26em; color:#a59a89; text-transform:uppercase; margin-top:4px;">{{ t.city }}</div>
+            <div style="border-top:1px dashed rgba(36,31,26,.32); margin:14px -16px 0;"></div>
+            <div style="display:flex; justify-content:space-between; padding-top:11px; font-family:'Spline Sans Mono',monospace;">
+              <div>
+                <div style="color:#a59a89; font-size:7px; letter-spacing:.26em;">SEEN</div>
+                <div style="color:#241f1a; font-size:9.5px; letter-spacing:.08em; margin-top:3px;">{{ t.date }}</div>
+              </div>
+              <div style="text-align:right;">
+                <div style="color:#a59a89; font-size:7px; letter-spacing:.26em;">SEAT</div>
+                <div style="color:#241f1a; font-size:9.5px; letter-spacing:.08em; margin-top:3px;">{{ t.seat }}</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </sc-for>
+  </div>
+
+  <!-- ============ SEARCH BUTTON ============ -->
+  <button onClick="{{ openSearch }}" aria-label="Search" style="position:absolute; top:58px; right:34px; z-index:7; width:46px; height:46px; border:none; background:transparent; cursor:pointer; padding:0;">
+    <span style="position:absolute; top:9px; left:9px; width:21px; height:21px; border:2.5px solid #f4eee2; border-radius:50%;"></span>
+    <span style="position:absolute; top:29px; left:27px; width:13px; height:2.5px; background:#f4eee2; border-radius:2px; transform:rotate(45deg); transform-origin:left center;"></span>
+  </button>
+
+  <!-- ============ FULL-PAGE SEARCH ============ -->
+  <sc-if value="{{ searchOpen }}" hint-placeholder-val="{{ false }}">
+    <div onClick="{{ closeSearch }}" style="position:fixed; inset:0; z-index:50; background:rgba(244,241,234,.97); backdrop-filter:blur(4px); display:flex; flex-direction:column; align-items:center; justify-content:center; gap:28px; animation:gl-fade .28s ease;">
+      <div style="font-family:'Spline Sans Mono',monospace; font-size:11px; letter-spacing:.42em; color:#a8742f; text-transform:uppercase; animation:gl-rise .38s ease both;">Search the Repertoire</div>
+      <input value="{{ query }}" onInput="{{ onQuery }}" onClick="{{ stop }}" autoFocus="{{ true }}" placeholder="Title, theatre, or date seen…" style="width:min(640px,84vw); background:transparent; border:none; border-bottom:2px solid #241f1a; color:#241f1a; font-family:'Bodoni Moda',serif; font-style:italic; font-weight:500; font-size:clamp(26px,4vw,40px); text-align:center; padding:12px 10px; outline:none; animation:gl-rise .44s ease both;" />
+      <div style="font-family:'Spline Sans Mono',monospace; font-size:10px; letter-spacing:.08em; color:#8a7d6a; animation:gl-rise .5s ease both;">Press Esc, or click anywhere, to close</div>
+    </div>
+  </sc-if>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script>
+class Component extends DCLogic {
+  state = {
+    searchOpen: false,
+    query: '',
+    stamps: {
+      lk:      { x: 40,  y: 22,  rot: -6, z: 2 },
+      phantom: { x: 250, y: 0,   rot: 5,  z: 4 },
+      wicked:  { x: 455, y: 46,  rot: 8,  z: 1 },
+      lesmis:  { x: 105, y: 236, rot: -8, z: 3 },
+      mamma:   { x: 345, y: 252, rot: 6,  z: 5 },
+    },
+  };
+
+  DATA = {
+    lk:      { title: 'The Lion King',            theatre: 'Lyceum Theatre',   city: 'London', date: '12 OCT 2024', seat: 'STALLS H14',       serial: '№ 0142', accent: 'oklch(0.62 0.085 70)'  },
+    phantom: { title: 'The Phantom of the Opera', theatre: "His Majesty's",    city: 'London', date: '03 FEB 2023', seat: 'ROYAL CIRCLE C9',   serial: '№ 0088', accent: 'oklch(0.58 0.088 28)'  },
+    wicked:  { title: 'Wicked',                   theatre: 'Apollo Victoria',  city: 'London', date: '21 JUN 2024', seat: 'STALLS M22',       serial: '№ 0119', accent: 'oklch(0.6 0.082 152)'  },
+    lesmis:  { title: 'Les Misérables',           theatre: 'Sondheim Theatre', city: 'London', date: '08 NOV 2022', seat: 'DRESS CIRCLE B4',   serial: '№ 0061', accent: 'oklch(0.58 0.085 250)' },
+    mamma:   { title: 'Mamma Mia!',               theatre: 'Novello Theatre',  city: 'London', date: '30 MAR 2025', seat: 'STALLS K17',       serial: '№ 0173', accent: 'oklch(0.58 0.088 332)' },
+  };
+  ORDER = ['lk', 'phantom', 'wicked', 'lesmis', 'mamma'];
+
+  componentDidMount() {
+    this.t0 = performance.now();
+    this.mx = this.tx = window.innerWidth / 2;
+    this._key = (e) => { if (e.key === 'Escape') this.setState({ searchOpen: false }); };
+    this._mm = (e) => { this.tx = e.clientX; };       // target only; eased in loop
+    this._rz = () => this.measure();
+    window.addEventListener('keydown', this._key);
+    window.addEventListener('mousemove', this._mm, { passive: true });
+    window.addEventListener('resize', this._rz);
+    this.measure();
+    this._raf = requestAnimationFrame(this.loop);
+  }
+  componentWillUnmount() {
+    window.removeEventListener('keydown', this._key);
+    window.removeEventListener('mousemove', this._mm);
+    window.removeEventListener('resize', this._rz);
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+    cancelAnimationFrame(this._raf);
+  }
+
+  // Measure pleat centers ONCE (and on resize) — they're pinned to the edges,
+  // so we never need getBoundingClientRect inside the animation loop.
+  measure = () => {
+    this.pleats = Array.from(document.querySelectorAll('[data-pleat]'));
+    this.centers = this.pleats.map((el) => { const r = el.getBoundingClientRect(); return r.left + r.width / 2; });
+    this.rots = this.pleats.map((el) => parseFloat(el.dataset.rot) || 0);
+    this.pleats.forEach((el) => { el.style.transformOrigin = '50% 0%'; el.style.willChange = 'transform'; });
+  };
+
+  // ---- curtains react to the cursor: pleats sway & part toward the mouse ----
+  loop = (now) => {
+    const t = now - this.t0;
+    const W = window.innerWidth;
+    const pl = this.pleats;
+    if (!pl || pl.length !== document.querySelectorAll('[data-pleat]').length) { this.measure(); }
+    // ease the cursor follow so motion is buttery, not twitchy
+    this.mx += (this.tx - this.mx) * 0.09;
+    const mx = this.mx;
+    const list = this.pleats;
+    if (list) {
+      for (let i = 0; i < list.length; i++) {
+        const el = list[i];
+        const cx = this.centers[i];
+        const rot = this.rots[i];
+        const phase = i * 0.5;
+        const idle = Math.sin(t * 0.0011 + phase) * 3;
+        const d = mx - cx;
+        const infl = Math.exp(-(d * d) / (W * W * 0.13));
+        const lean = d * 0.014 * infl;
+        const sway = idle + lean;
+        const breathe = 1 + 0.009 * Math.sin(t * 0.0011 + phase);
+        el.style.transform = 'rotate(' + rot + 'deg) translateX(' + sway.toFixed(2) + 'px) skewX(' + (sway * 0.035).toFixed(3) + 'deg) scaleY(' + breathe.toFixed(4) + ')';
+      }
+    }
+    this._raf = requestAnimationFrame(this.loop);
+  };
+
+  // ---- ticket dragging ----
+  onDown = (id) => (e) => {
+    e.preventDefault();
+    const st = this.state.stamps[id];
+    this.drag = { id, sx: e.clientX, sy: e.clientY, x0: st.x, y0: st.y };
+    this.bringFront(id);
+    window.addEventListener('pointermove', this.onMove);
+    window.addEventListener('pointerup', this.onUp);
+  };
+  onMove = (e) => {
+    if (!this.drag) return;
+    const d = this.drag;
+    const nx = d.x0 + (e.clientX - d.sx);
+    const ny = d.y0 + (e.clientY - d.sy);
+    this.setState((s) => ({ stamps: { ...s.stamps, [d.id]: { ...s.stamps[d.id], x: nx, y: ny } } }));
+  };
+  onUp = () => {
+    this.drag = null;
+    window.removeEventListener('pointermove', this.onMove);
+    window.removeEventListener('pointerup', this.onUp);
+  };
+  bringFront = (id) => this.setState((s) => {
+    const mz = Math.max.apply(null, Object.values(s.stamps).map((v) => v.z));
+    return { stamps: { ...s.stamps, [id]: { ...s.stamps[id], z: mz + 1 } } };
+  });
+
+  openSearch = () => this.setState({ searchOpen: true });
+  closeSearch = () => this.setState({ searchOpen: false });
+  stop = (e) => e.stopPropagation();
+  onQuery = (e) => this.setState({ query: e.target.value });
+
+  // ---- paper-cut curtain geometry (uneven, hand-cut) ----
+  pleat(w, h, rot, rad, dir) {
+    const bg = 'linear-gradient(' + dir + 'deg, oklch(0.57 0.17 28) 0%, oklch(0.48 0.185 28) 34%, oklch(0.36 0.15 27) 64%, oklch(0.5 0.18 28) 90%)';
+    return {
+      rot,
+      style: {
+        flexGrow: w, flexBasis: 0, height: h + '%', alignSelf: 'flex-start',
+        background: bg,
+        borderBottomLeftRadius: rad + 'px', borderBottomRightRadius: (rad - 18) + 'px',
+        transform: 'rotate(' + rot + 'deg)', transformOrigin: '50% 0%',
+        boxShadow: '-5px 0 11px rgba(64,26,10,.16)',
+      },
+    };
+  }
+
+  renderVals() {
+    const desks = { warm: '#e7e1d3', cool: '#e2e5e0', grey: '#e4e2dd' };
+    const desk = desks[this.props.deskTone] || desks.warm;
+    const showCurtains = this.props.showCurtains !== false;
+    const showSpot = this.props.showSpot !== false;
+    const grid = this.props.layout === 'grid';
+    const accentsOn = this.props.accents !== false;
+
+    // uneven side pleats
+    const L = [[1.15,98,-1.2,66,102],[0.9,90,0.8,82,78],[1.25,100,-0.6,56,104],[0.85,93,1.4,90,80],[1.1,96,-1.0,64,100],[0.95,87,0.5,76,82]];
+    const R = [[0.95,89,1.0,80,80],[1.2,96,-0.7,58,102],[0.88,92,1.3,88,78],[1.15,100,-1.1,62,104],[0.92,90,0.6,84,80],[1.22,97,-1.4,56,100]];
+    const leftPleats = L.map((a) => this.pleat(a[0], a[1], a[2], a[3], a[4]));
+    const rightPleats = R.map((a) => this.pleat(a[0], a[1], a[2], a[3], a[4]));
+
+    // uneven scalloped valance swags
+    const SW = [1.1,0.85,1.25,0.95,1.15,0.8,1.2,0.9,1.1,0.86,1.18];
+    const SH = [54,40,60,46,56,38,58,44,52,42,56];
+    const swags = SW.map((w, i) => ({
+      style: {
+        flexGrow: w, flexBasis: 0, height: SH[i] + 'px',
+        background: 'linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%)',
+        borderBottomLeftRadius: '60% 100%', borderBottomRightRadius: '60% 100%',
+        boxShadow: '0 4px 8px rgba(60,24,8,.18)',
+      },
+    }));
+
+    const gridPos = [[18,18],[238,18],[458,18],[128,290],[348,290]];
+
+    const tickets = this.ORDER.map((id, idx) => {
+      const d = this.DATA[id];
+      const s = this.state.stamps[id];
+      const x = grid ? gridPos[idx][0] : s.x;
+      const y = grid ? gridPos[idx][1] : s.y;
+      const rot = grid ? 0 : s.rot;
+      const z = grid ? idx + 1 : s.z;
+      return {
+        id, title: d.title, theatre: d.theatre, city: d.city, date: d.date, seat: d.seat,
+        serial: d.serial,
+        accent: accentsOn ? d.accent : '#8a7f70',
+        st: {
+          position: 'absolute', left: x + 'px', top: y + 'px',
+          transform: 'rotate(' + rot + 'deg)', zIndex: z, width: '210px',
+          cursor: grid ? 'default' : 'grab', touchAction: 'none', userSelect: 'none', WebkitUserSelect: 'none',
+          filter: 'drop-shadow(0 2px 3px rgba(50,36,20,.2)) drop-shadow(0 10px 20px rgba(50,36,20,.16))',
+        },
+        pd: grid ? undefined : this.onDown(id),
+      };
+    });
+
+    return {
+      desk, showCurtains, showSpot, leftPleats, rightPleats, swags, tickets,
+      searchOpen: this.state.searchOpen, query: this.state.query,
+      openSearch: this.openSearch, closeSearch: this.closeSearch, stop: this.stop, onQuery: this.onQuery,
+    };
+  }
+}
+</script>
+</body>
+</html>

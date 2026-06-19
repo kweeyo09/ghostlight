@@ -63,7 +63,7 @@ body {
 .valance-bar {
   position: relative;
   height: 74px;
-  background: linear-gradient(180deg, oklch(0.56 0.094 34) 0%, oklch(0.49 0.098 33) 100%);
+  background: linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%);
   box-shadow: 0 5px 14px rgba(60, 24, 8, 0.22);
   display: flex;
   align-items: center;
@@ -86,7 +86,7 @@ body {
   height: 60px;
 }
 
-/* ---- side curtains ---- */
+/* ---- side curtains (fully drawn) ---- */
 .curtain {
   position: absolute;
   top: 0;
@@ -95,17 +95,65 @@ body {
   align-items: flex-start;
   z-index: 1;
   pointer-events: none;
-  width: min(27vw, 360px);
+  width: 52vw;
 }
 
 .curtain-left {
   left: 0;
-  filter: drop-shadow(8px 0 16px rgba(60, 24, 8, 0.18));
+  filter: drop-shadow(8px 0 22px rgba(60, 24, 8, 0.26));
 }
 
 .curtain-right {
   right: 0;
-  filter: drop-shadow(-8px 0 16px rgba(60, 24, 8, 0.18));
+  filter: drop-shadow(-8px 0 22px rgba(60, 24, 8, 0.26));
+}
+
+/* center seam shadow where the two drapes meet */
+.curtain-seam {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 80px;
+  z-index: 1;
+  pointer-events: none;
+  background: linear-gradient(
+    90deg,
+    rgba(40, 16, 4, 0) 0%,
+    rgba(40, 16, 4, 0.34) 50%,
+    rgba(40, 16, 4, 0) 100%
+  );
+}
+
+/* ---- spotlight ---- */
+.spotlight {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 30vw at 50% 52%,
+    rgba(255, 240, 206, 0.52) 0%,
+    rgba(255, 238, 200, 0.26) 46%,
+    rgba(255, 236, 196, 0) 70%
+  );
+  mix-blend-mode: screen;
+}
+
+/* dims everything but the lit stage */
+.spotlight-vignette {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 36vw at 50% 52%,
+    rgba(16, 8, 2, 0) 0%,
+    rgba(16, 8, 2, 0) 40%,
+    rgba(16, 8, 2, 0.52) 80%,
+    rgba(12, 6, 2, 0.76) 100%
+  );
 }
 
 /* ---- ticket stage ---- */
@@ -116,7 +164,7 @@ body {
   transform: translate(-50%, -50%);
   width: 680px;
   height: 500px;
-  z-index: 4;
+  z-index: 6;
 }
 
 .ticket-paper {

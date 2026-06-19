@@ -24,7 +24,7 @@ function pleatStyle(w: number, h: number, rot: number, rad: number, dir: number)
     flexBasis: 0,
     height: h + "%",
     alignSelf: "flex-start",
-    background: `linear-gradient(${dir}deg, oklch(0.73 0.066 44) 0%, oklch(0.64 0.088 38) 34%, oklch(0.5 0.096 33) 64%, oklch(0.6 0.09 36) 90%)`,
+    background: `linear-gradient(${dir}deg, oklch(0.57 0.17 28) 0%, oklch(0.48 0.185 28) 34%, oklch(0.36 0.15 27) 64%, oklch(0.5 0.18 28) 90%)`,
     borderBottomLeftRadius: rad + "px",
     borderBottomRightRadius: rad - 18 + "px",
     transform: `rotate(${rot}deg)`,
@@ -109,7 +109,7 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
         const idle = Math.sin(t * 0.0011 + phase) * 3;
         const d = m - cx;
         const infl = Math.exp(-(d * d) / (W * W * 0.13));
-        const lean = d * 0.04 * infl;
+        const lean = d * 0.014 * infl;
         const sway = idle + lean;
         const breathe = 1 + 0.009 * Math.sin(t * 0.0011 + phase);
         el.style.transform = `rotate(${rot}deg) translateX(${sway.toFixed(2)}px) skewX(${(sway * 0.035).toFixed(3)}deg) scaleY(${breathe.toFixed(4)})`;
@@ -185,7 +185,7 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
                 flexBasis: 0,
                 height: SWAG_H[i] + "px",
                 background:
-                  "linear-gradient(180deg, oklch(0.54 0.094 34) 0%, oklch(0.47 0.098 32) 100%)",
+                  "linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%)",
                 borderBottomLeftRadius: "60% 100%",
                 borderBottomRightRadius: "60% 100%",
                 boxShadow: "0 4px 8px rgba(60,24,8,.18)",
@@ -206,6 +206,11 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
           <div key={i} ref={setPleat(LEFT.length + i)} style={pleatStyle(p[0], p[1], p[2], p[3], p[4])} />
         ))}
       </div>
+      <div className="curtain-seam" />
+
+      {/* ===== spotlight ===== */}
+      <div className="spotlight" />
+      <div className="spotlight-vignette" />
 
       {/* ===== ticket stubs ===== */}
       <div className="tickets">

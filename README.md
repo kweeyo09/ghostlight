@@ -57,6 +57,11 @@ Or, with the Vercel CLI: `npm i -g vercel && vercel --prod`.
 ## Source
 
 The visual design originates from a Claude Design project ("theatre web"),
-authored in Claude Design's `.dc.html` runtime format. The original component is
-preserved at [`Theatre Log.dc.html`](Theatre%20Log.dc.html); this repo is a
-framework-ready implementation of it.
+authored in Claude Design's `.dc.html` runtime format. The implemented design is
+the "Curtain Up" variant — fully-drawn crimson drapes with a spotlight pool
+focusing the lit stage. Both source revisions are preserved for reference:
+
+- [`Theatre Log - Curtain Up.dc.html`](Theatre%20Log%20-%20Curtain%20Up.dc.html) — current implemented design.
+- [`Theatre Log.dc.html`](Theatre%20Log.dc.html) — earlier open-curtain revision.
+
+This repo is a framework-ready implementation of it.
