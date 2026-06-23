@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getShow, type LoggedVisit } from "@/lib/shows";
-import { addVisit, deleteVisit, isDbConfigured, listVisits } from "@/lib/db";
+import { addVisit, deleteVisit, isDbConfigured, listVisits, updateVisit } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 
@@ -62,6 +62,30 @@ export async function POST(req: NextRequest) {
   try {
     await addVisit(visit);
     return NextResponse.json({ configured: true, visit });
+  } catch (err) {
+    return NextResponse.json({ error: String(err) }, { status: 500 });
+  }
+}
+
+// PATCH /api/logs  →  edit theatre/date/seat of an existing visit.
+export async function PATCH(req: NextRequest) {
+  let body: { id?: string; theatre?: string; date?: string; seat?: string };
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
+  }
+  const { id, theatre, date, seat } = body;
+  if (!id) return NextResponse.json({ error: "id is required" }, { status: 400 });
+  if (!date) return NextResponse.json({ error: "date is required" }, { status: 400 });
+  if (!isDbConfigured()) return NextResponse.json({ configured: false, id });
+  try {
+    await updateVisit(id, {
+      theatre: (theatre ?? "").trim(),
+      date: (date ?? "").trim(),
+      seat: (seat ?? "").trim(),
+    });
+    return NextResponse.json({ configured: true, id });
   } catch (err) {
     return NextResponse.json({ error: String(err) }, { status: 500 });
   }

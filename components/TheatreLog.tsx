@@ -49,12 +49,9 @@ const RIGHT: [number, number, number, number, number][] = [
   [1.15, 100, -1.1, 62, 104], [0.92, 90, 0.6, 84, 80], [1.22, 97, -1.4, 56, 100],
 ];
 
-// uneven scalloped valance swags
 const SWAG_W = [1.1, 0.85, 1.25, 0.95, 1.15, 0.8, 1.2, 0.9, 1.1, 0.86, 1.18];
 const SWAG_H = [54, 40, 60, 46, 56, 38, 58, 44, 52, 42, 56];
 
-// Deterministic scatter so logged stubs land in a pleasing spread across the
-// 680×500 stage rather than all on top of each other.
 function scatterPos(i: number): Stamp {
   const cols = 3;
   const col = i % cols;
@@ -62,24 +59,31 @@ function scatterPos(i: number): Stamp {
   const jitterX = ((i * 53) % 40) - 20;
   const jitterY = ((i * 31) % 36) - 18;
   const rot = (((i * 37) % 17) - 8) * 0.9;
-  return {
-    x: 30 + col * 225 + jitterX,
-    y: 10 + row * 150 + jitterY,
-    rot,
-    z: i + 1,
-  };
+  return { x: 30 + col * 225 + jitterX, y: 10 + row * 150 + jitterY, rot, z: i + 1 };
 }
 
 function mapsQuery(show: { theatre: string; address: string }): string {
   return encodeURIComponent(`${show.theatre}, ${show.address}`);
 }
 
-// "2024-10-12" → "12 OCT 2024" (falls back to whatever was typed).
+// "2024-10-12" → "12 OCT 2024"
 function formatSeenDate(value: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
   if (!m) return value.toUpperCase();
   const months = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
   return `${m[3]} ${months[Number(m[2]) - 1]} ${m[1]}`;
+}
+
+// "12 OCT 2024" → "2024-10-12" (for date input value)
+function parseDisplayDate(d: string): string {
+  const M: Record<string, string> = {
+    JAN: "01", FEB: "02", MAR: "03", APR: "04", MAY: "05", JUN: "06",
+    JUL: "07", AUG: "08", SEP: "09", OCT: "10", NOV: "11", DEC: "12",
+  };
+  const m = /^(\d{2})\s([A-Z]{3})\s(\d{4})$/i.exec(d.trim());
+  if (!m) return "";
+  const mo = M[m[2].toUpperCase()];
+  return mo ? `${m[3]}-${mo}-${m[1]}` : "";
 }
 
 function loadLocal(): LoggedVisit[] {
@@ -93,9 +97,7 @@ function loadLocal(): LoggedVisit[] {
 function saveLocal(visits: LoggedVisit[]) {
   try {
     window.localStorage.setItem(LOCAL_KEY, JSON.stringify(visits));
-  } catch {
-    /* ignore quota / private-mode errors */
-  }
+  } catch { /* ignore quota errors */ }
 }
 
 export default function TheatreLog({ shows }: { shows: Show[] }) {
@@ -104,12 +106,12 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
   const [results, setResults] = useState<Show[]>(shows);
   const [selected, setSelected] = useState<Show | null>(null);
 
-  // logged visits (the ticket stubs)
   const [visits, setVisits] = useState<LoggedVisit[]>([]);
   const [dbConfigured, setDbConfigured] = useState<boolean | null>(null);
   const [stamps, setStamps] = useState<Record<string, Stamp>>({});
+  const [flipped, setFlipped] = useState<Set<string>>(new Set());
 
-  // ---- load logged visits (DB → localStorage fallback) ----
+  // ---- load logged visits ----
   useEffect(() => {
     let alive = true;
     fetch("/api/logs")
@@ -129,23 +131,19 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
         setDbConfigured(false);
         setVisits(loadLocal());
       });
-    return () => {
-      alive = false;
-    };
+    return () => { alive = false; };
   }, []);
 
-  // give every visit a stage position (keep existing ones, scatter new ones)
+  // give every visit a stage position
   useEffect(() => {
     setStamps((prev) => {
       const next = { ...prev };
-      visits.forEach((v, i) => {
-        if (!next[v.id]) next[v.id] = scatterPos(i);
-      });
+      visits.forEach((v, i) => { if (!next[v.id]) next[v.id] = scatterPos(i); });
       return next;
     });
   }, [visits]);
 
-  // ---- curtain animation (cursor-reactive pleats) ----
+  // ---- curtain animation ----
   const pleatsRef = useRef<HTMLDivElement[]>([]);
   const centersRef = useRef<number[]>([]);
   const rotsRef = useRef<number[]>([]);
@@ -169,17 +167,15 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
     mx.current = tx.current = window.innerWidth / 2;
     t0.current = performance.now();
     measure();
-
     const onMouse = (e: MouseEvent) => (tx.current = e.clientX);
     const onResize = () => measure();
     window.addEventListener("mousemove", onMouse, { passive: true });
     window.addEventListener("resize", onResize);
-
     let raf = 0;
     const loop = (now: number) => {
       const t = now - t0.current;
       const W = window.innerWidth;
-      mx.current += (tx.current - mx.current) * 0.09; // eased follow
+      mx.current += (tx.current - mx.current) * 0.09;
       const m = mx.current;
       const pl = pleatsRef.current;
       for (let i = 0; i < pl.length; i++) {
@@ -199,7 +195,6 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
       raf = requestAnimationFrame(loop);
     };
     raf = requestAnimationFrame(loop);
-
     return () => {
       window.removeEventListener("mousemove", onMouse);
       window.removeEventListener("resize", onResize);
@@ -207,7 +202,7 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
     };
   }, [measure]);
 
-  // ---- Escape closes the detail panel, then the search overlay ----
+  // ---- Escape key ----
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape") return;
@@ -218,23 +213,45 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
     return () => window.removeEventListener("keydown", onKey);
   }, [selected, searchOpen]);
 
-  // ---- ticket dragging ----
+  // ---- flip helpers ----
+  const toggleFlip = useCallback((id: string) => {
+    setFlipped((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }, []);
+
+  const unflip = useCallback((id: string) => {
+    setFlipped((prev) => { const next = new Set(prev); next.delete(id); return next; });
+  }, []);
+
+  // ---- dragging ----
   const drag = useRef<{ id: string; sx: number; sy: number; x0: number; y0: number; moved: boolean } | null>(null);
 
   const onMove = useCallback((e: PointerEvent) => {
     const d = drag.current;
     if (!d) return;
-    d.moved = true;
-    const nx = d.x0 + (e.clientX - d.sx);
-    const ny = d.y0 + (e.clientY - d.sy);
-    setStamps((s) => ({ ...s, [d.id]: { ...s[d.id], x: nx, y: ny } }));
+    const dx = e.clientX - d.sx;
+    const dy = e.clientY - d.sy;
+    // 4px threshold — tiny jitter shouldn't prevent a tap-to-flip
+    if (!d.moved && Math.hypot(dx, dy) > 4) d.moved = true;
+    if (!d.moved) return;
+    setStamps((s) => ({ ...s, [d.id]: { ...s[d.id], x: d.x0 + dx, y: d.y0 + dy } }));
   }, []);
+
   const onUp = useCallback(() => {
+    const d = drag.current;
     drag.current = null;
     window.removeEventListener("pointermove", onMove);
     window.removeEventListener("pointerup", onUp);
-  }, [onMove]);
+    // tap (no meaningful movement) → flip the stub
+    if (d && !d.moved) toggleFlip(d.id);
+  }, [onMove, toggleFlip]);
+
   const onDown = (id: string) => (e: ReactPointerEvent) => {
+    // when the back face is showing, let it handle its own pointer events
+    if (flipped.has(id)) return;
     e.preventDefault();
     const st = stamps[id];
     if (!st) return;
@@ -247,7 +264,7 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
     window.addEventListener("pointerup", onUp);
   };
 
-  // ---- search (talks to the /api/search backend) ----
+  // ---- search ----
   useEffect(() => {
     if (!searchOpen) return;
     const ctrl = new AbortController();
@@ -257,24 +274,16 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
         .then((d: { results: Show[] }) => setResults(d.results))
         .catch(() => {});
     }, 120);
-    return () => {
-      clearTimeout(id);
-      ctrl.abort();
-    };
+    return () => { clearTimeout(id); ctrl.abort(); };
   }, [query, searchOpen]);
 
-  // ---- logging a visit ----
+  // ---- log a new visit ----
   const logVisit = useCallback(
     async (show: Show, theatre: string, dateValue: string, seat: string) => {
       const res = await fetch("/api/logs", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          showId: show.id,
-          theatre,
-          date: formatSeenDate(dateValue),
-          seat,
-        }),
+        body: JSON.stringify({ showId: show.id, theatre, date: formatSeenDate(dateValue), seat }),
       });
       const data: { configured: boolean; visit?: LoggedVisit; error?: string } = await res.json();
       if (!res.ok || !data.visit) throw new Error(data.error ?? "Could not log visit");
@@ -287,6 +296,26 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
     []
   );
 
+  // ---- edit an existing visit ----
+  const editVisit = useCallback(
+    async (id: string, theatre: string, date: string, seat: string) => {
+      setVisits((v) => {
+        const next = v.map((x) => (x.id === id ? { ...x, theatre, date, seat } : x));
+        if (dbConfigured === false) saveLocal(next);
+        return next;
+      });
+      if (dbConfigured) {
+        fetch("/api/logs", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, theatre, date, seat }),
+        }).catch(() => {});
+      }
+    },
+    [dbConfigured]
+  );
+
+  // ---- remove a visit ----
   const removeVisit = useCallback(
     async (id: string) => {
       setVisits((v) => {
@@ -313,13 +342,9 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
             <div
               key={i}
               style={{
-                flexGrow: w,
-                flexBasis: 0,
-                height: SWAG_H[i] + "px",
-                background:
-                  "linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%)",
-                borderBottomLeftRadius: "60% 100%",
-                borderBottomRightRadius: "60% 100%",
+                flexGrow: w, flexBasis: 0, height: SWAG_H[i] + "px",
+                background: "linear-gradient(180deg, oklch(0.5 0.185 28) 0%, oklch(0.4 0.17 27) 100%)",
+                borderBottomLeftRadius: "60% 100%", borderBottomRightRadius: "60% 100%",
                 boxShadow: "0 4px 8px rgba(60,24,8,.18)",
               }}
             />
@@ -344,15 +369,14 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
       <div className="spotlight" />
       <div className="spotlight-vignette" />
 
-      {/* ===== empty state (shown when no visits logged yet) ===== */}
+      {/* ===== empty state ===== */}
       {visits.length === 0 && (
         <div className="stage-empty">
           <div className="stage-empty-eyebrow">The stage is set</div>
           <div className="stage-empty-title">No tickets stubbed yet</div>
           <p>
-            Search the {shows.length} trending London shows, read a quick
-            overview, and log the ones you&rsquo;ve seen — each becomes a
-            draggable ticket stub here.
+            Search the {shows.length} trending London shows, read a quick overview, and log the
+            ones you&rsquo;ve seen — each becomes a draggable ticket stub here.
           </p>
           <button className="cta" onClick={() => setSearchOpen(true)}>
             Search the repertoire
@@ -360,67 +384,74 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
         </div>
       )}
 
-      {/* ===== ticket stubs (logged visits) ===== */}
+      {/* ===== ticket stubs ===== */}
       <div className="tickets">
         {visits.map((t) => {
           const s = stamps[t.id];
           if (!s) return null;
-          const st: CSSProperties = {
+          const isFlipped = flipped.has(t.id);
+          // NOTE: no filter/drop-shadow on this div — a CSS filter on any
+          // ancestor of a preserve-3d element flattens the 3D transform.
+          // Shadows live on .ticket-face instead (see globals.css).
+          const posStyle: CSSProperties = {
             position: "absolute",
             left: s.x + "px",
             top: s.y + "px",
             transform: `rotate(${s.rot}deg)`,
             zIndex: s.z,
             width: "210px",
-            cursor: "grab",
+            cursor: isFlipped ? "default" : "grab",
             touchAction: "none",
             userSelect: "none",
             WebkitUserSelect: "none",
-            filter:
-              "drop-shadow(0 2px 3px rgba(50,36,20,.2)) drop-shadow(0 10px 20px rgba(50,36,20,.16))",
           };
           return (
-            <div key={t.id} style={st} onPointerDown={onDown(t.id)}>
-              <div className="ticket-paper">
-                <button
-                  className="ticket-remove"
-                  aria-label="Remove this ticket"
-                  onPointerDown={(e) => e.stopPropagation()}
-                  onClick={() => removeVisit(t.id)}
-                >
-                  ×
-                </button>
-                <div className="ticket-body">
-                  <div className="ticket-head">
-                    <span>ADMIT ONE</span>
-                    <span style={{ color: t.accent, fontWeight: 600 }}>{t.serial}</span>
-                  </div>
-                  <div style={{ height: 2, background: t.accent, marginTop: 9 }} />
-                  <div style={{ height: 1, background: "rgba(36,31,26,.16)", marginTop: 2 }} />
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      minHeight: 58,
-                      padding: "15px 2px 9px",
-                    }}
-                  >
-                    <div className="ticket-title">{t.title}</div>
-                  </div>
-                  <div className="ticket-theatre">{t.theatre}</div>
-                  <div className="ticket-city">{t.city}</div>
-                  <div style={{ borderTop: "1px dashed rgba(36,31,26,.32)", margin: "14px -16px 0" }} />
-                  <div className="ticket-meta">
-                    <div>
-                      <div className="meta-label">SEEN</div>
-                      <div className="meta-value">{t.date}</div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div className="meta-label">SEAT</div>
-                      <div className="meta-value">{t.seat || "—"}</div>
+            <div key={t.id} style={posStyle} onPointerDown={onDown(t.id)}>
+              <div className="ticket-flip-container">
+                <div className={`ticket-flipper${isFlipped ? " is-flipped" : ""}`}>
+
+                  {/* FRONT */}
+                  <div className="ticket-face ticket-front">
+                    <div className="ticket-paper">
+                      <div className="ticket-body">
+                        <div className="ticket-head">
+                          <span>ADMIT ONE</span>
+                          <span style={{ color: t.accent, fontWeight: 600 }}>{t.serial}</span>
+                        </div>
+                        <div style={{ height: 2, background: t.accent, marginTop: 9 }} />
+                        <div style={{ height: 1, background: "rgba(36,31,26,.16)", marginTop: 2 }} />
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: 58, padding: "15px 2px 9px" }}>
+                          <div className="ticket-title">{t.title}</div>
+                        </div>
+                        <div className="ticket-theatre">{t.theatre}</div>
+                        <div className="ticket-city">{t.city}</div>
+                        <div style={{ borderTop: "1px dashed rgba(36,31,26,.32)", margin: "14px -16px 0" }} />
+                        <div className="ticket-meta">
+                          <div>
+                            <div className="meta-label">SEEN</div>
+                            <div className="meta-value">{t.date}</div>
+                          </div>
+                          <div style={{ textAlign: "right" }}>
+                            <div className="meta-label">SEAT</div>
+                            <div className="meta-value">{t.seat || "—"}</div>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   </div>
+
+                  {/* BACK */}
+                  <div className="ticket-face ticket-back">
+                    <div className="ticket-paper">
+                      <TicketBack
+                        visit={t}
+                        onSave={editVisit}
+                        onDelete={removeVisit}
+                        onFlipBack={() => unflip(t.id)}
+                      />
+                    </div>
+                  </div>
+
                 </div>
               </div>
             </div>
@@ -451,18 +482,10 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
               <div className="search-empty">No matches in the repertoire.</div>
             ) : (
               results.map((r) => (
-                <button
-                  className="search-result"
-                  key={r.id}
-                  onClick={() => setSelected(r)}
-                >
+                <button className="search-result" key={r.id} onClick={() => setSelected(r)}>
                   <span className="sr-title">{r.title}</span>
-                  <span className="sr-sub">
-                    {r.genre} · {r.theatre}
-                  </span>
-                  <span className="sr-go" style={{ color: r.accent }}>
-                    View ›
-                  </span>
+                  <span className="sr-sub">{r.genre} · {r.theatre}</span>
+                  <span className="sr-go" style={{ color: r.accent }}>View ›</span>
                 </button>
               ))
             )}
@@ -486,8 +509,96 @@ export default function TheatreLog({ shows }: { shows: Show[] }) {
 }
 
 // ---------------------------------------------------------------------------
-// Detail panel: brief overview + real theatre location (Google Map) + the
-// "log when you've seen it, and at which theatre" form.
+// Back face of a ticket stub — edit / delete a logged visit.
+// onPointerDown stops propagation so interacting with the form doesn't
+// accidentally trigger the outer drag handler.
+// ---------------------------------------------------------------------------
+function TicketBack({
+  visit,
+  onSave,
+  onDelete,
+  onFlipBack,
+}: {
+  visit: LoggedVisit;
+  onSave: (id: string, theatre: string, date: string, seat: string) => Promise<void>;
+  onDelete: (id: string) => Promise<void>;
+  onFlipBack: () => void;
+}) {
+  const [dateValue, setDateValue] = useState(() => parseDisplayDate(visit.date));
+  const [theatre, setTheatre] = useState(visit.theatre);
+  const [seat, setSeat] = useState(visit.seat);
+  const [saving, setSaving] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  const stop = (e: React.PointerEvent | React.MouseEvent) => e.stopPropagation();
+
+  const handleSave = async (e: FormEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setSaving(true);
+    try {
+      await onSave(visit.id, theatre, formatSeenDate(dateValue), seat);
+      onFlipBack();
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setDeleting(true);
+    try {
+      await onDelete(visit.id);
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  return (
+    <div
+      className="ticket-back-inner"
+      onPointerDown={stop}
+      style={{ "--back-accent": visit.accent } as CSSProperties}
+    >
+      <button
+        className="ticket-back-flip"
+        aria-label="Flip back"
+        onClick={(e) => { e.stopPropagation(); onFlipBack(); }}
+      >
+        ↩
+      </button>
+      <div className="ticket-back-header">
+        <div className="ticket-back-title">{visit.title}</div>
+        <div className="ticket-back-serial" style={{ color: visit.accent }}>{visit.serial}</div>
+      </div>
+      <form className="ticket-back-form" onSubmit={handleSave}>
+        <label>
+          <span>Date seen</span>
+          <input type="date" value={dateValue} onChange={(e) => setDateValue(e.target.value)} required />
+        </label>
+        <label>
+          <span>Theatre</span>
+          <input type="text" value={theatre} onChange={(e) => setTheatre(e.target.value)} />
+        </label>
+        <label>
+          <span>Seat</span>
+          <input type="text" value={seat} onChange={(e) => setSeat(e.target.value)} placeholder="—" />
+        </label>
+        <div className="ticket-back-actions">
+          <button type="submit" className="ticket-back-save" disabled={saving}>
+            {saving ? "Saving…" : "Save"}
+          </button>
+          <button type="button" className="ticket-back-delete" onClick={handleDelete} disabled={deleting}>
+            {deleting ? "…" : "Delete"}
+          </button>
+        </div>
+      </form>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// Detail panel: brief overview + real theatre location (Google Map) + log form.
 // ---------------------------------------------------------------------------
 function ShowDetail({
   show,
@@ -510,20 +621,16 @@ function ShowDetail({
   const [error, setError] = useState<string | null>(null);
 
   const mapSrc = useMemo(
-    () =>
-      MAPS_KEY
-        ? `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${mapsQuery(show)}&zoom=16`
-        : null,
+    () => MAPS_KEY
+      ? `https://www.google.com/maps/embed/v1/place?key=${MAPS_KEY}&q=${mapsQuery(show)}&zoom=16`
+      : null,
     [show]
   );
   const mapLink = `https://www.google.com/maps/search/?api=1&query=${mapsQuery(show)}`;
 
   const submit = async (e: FormEvent) => {
     e.preventDefault();
-    if (!date) {
-      setError("Pick the date you saw it.");
-      return;
-    }
+    if (!date) { setError("Pick the date you saw it."); return; }
     setSaving(true);
     setError(null);
     try {
@@ -543,20 +650,14 @@ function ShowDetail({
         onClick={(e) => e.stopPropagation()}
         style={{ "--accent": show.accent } as CSSProperties}
       >
-        <button className="detail-close" aria-label="Close" onClick={onClose}>
-          ×
-        </button>
-
+        <button className="detail-close" aria-label="Close" onClick={onClose}>×</button>
         <div className="detail-genre">{show.genre}</div>
         <h2 className="detail-title">{show.title}</h2>
         <p className="detail-overview">{show.overview}</p>
-
         <div className="detail-venue">
           <div className="detail-venue-name">{show.theatre}</div>
           <div className="detail-venue-addr">{show.address}</div>
         </div>
-
-        {/* real theatre location via Google Maps */}
         <div className="detail-map">
           {mapSrc ? (
             <iframe
@@ -570,26 +671,18 @@ function ShowDetail({
             <a className="detail-map-fallback" href={mapLink} target="_blank" rel="noreferrer">
               <span className="pin">◎</span>
               View {show.theatre} on Google Maps
-              <small>
-                (add a NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to embed the live map here)
-              </small>
+              <small>(add a NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to embed the live map here)</small>
             </a>
           )}
         </div>
-
-        {/* log this show */}
         {done ? (
           <div className="detail-logged">
-            <div className="detail-logged-tick" style={{ color: show.accent }}>
-              ✓
-            </div>
+            <div className="detail-logged-tick" style={{ color: show.accent }}>✓</div>
             <div>
-              Logged — <strong>{show.title}</strong> at {theatre || show.theatre}. A
-              ticket stub is now on your stage.
+              Logged — <strong>{show.title}</strong> at {theatre || show.theatre}. A ticket stub is
+              now on your stage. Click it to flip and edit.
             </div>
-            <button className="cta" onClick={onClose}>
-              Back to the stage
-            </button>
+            <button className="cta" onClick={onClose}>Back to the stage</button>
           </div>
         ) : (
           <form className="log-form" onSubmit={submit}>
@@ -597,32 +690,16 @@ function ShowDetail({
             <div className="log-row">
               <label>
                 <span>Date seen</span>
-                <input
-                  type="date"
-                  value={date}
-                  max="2099-12-31"
-                  onChange={(e) => setDate(e.target.value)}
-                  required
-                />
+                <input type="date" value={date} max="2099-12-31" onChange={(e) => setDate(e.target.value)} required />
               </label>
               <label>
                 <span>Seat (optional)</span>
-                <input
-                  type="text"
-                  value={seat}
-                  placeholder="e.g. STALLS H14"
-                  onChange={(e) => setSeat(e.target.value)}
-                />
+                <input type="text" value={seat} placeholder="e.g. STALLS H14" onChange={(e) => setSeat(e.target.value)} />
               </label>
             </div>
             <label className="log-theatre">
               <span>Theatre seen at</span>
-              <input
-                type="text"
-                value={theatre}
-                onChange={(e) => setTheatre(e.target.value)}
-                placeholder={show.theatre}
-              />
+              <input type="text" value={theatre} onChange={(e) => setTheatre(e.target.value)} placeholder={show.theatre} />
             </label>
             {error && <div className="log-error">{error}</div>}
             <button className="cta" type="submit" disabled={saving}>
@@ -637,7 +714,6 @@ function ShowDetail({
             </div>
           </form>
         )}
-
         {alreadyLogged.length > 0 && (
           <div className="detail-history">
             Previously logged:{" "}

@@ -459,32 +459,168 @@ body {
   transform: none;
 }
 
-/* ---- ticket remove button ---- */
-.ticket-paper {
+/* ---- 3D flip ---- */
+.ticket-flip-container {
+  perspective: 900px;
+}
+
+.ticket-flipper {
   position: relative;
+  transform-style: preserve-3d;
+  /* slight overshoot (y2 > 1) gives a spin-like feel */
+  transition: transform 0.55s cubic-bezier(0.4, 0, 0.2, 1.25);
 }
 
-.ticket-remove {
+.ticket-flipper.is-flipped {
+  transform: rotateY(180deg);
+}
+
+.ticket-face {
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  /* shadows here, NOT on the ancestor — filter on ancestors breaks preserve-3d */
+  filter: drop-shadow(0 2px 3px rgba(50, 36, 20, 0.2)) drop-shadow(0 10px 20px rgba(50, 36, 20, 0.16));
+}
+
+.ticket-back {
   position: absolute;
-  top: 5px;
-  right: 6px;
-  z-index: 2;
-  width: 18px;
-  height: 18px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(36, 31, 26, 0.08);
-  color: #8a7d6a;
-  font-size: 14px;
-  line-height: 1;
-  cursor: pointer;
-  opacity: 0;
-  transition: opacity 0.15s ease, background 0.15s ease;
+  inset: 0;
+  transform: rotateY(180deg);
 }
 
-.ticket-remove:hover {
+/* ---- ticket back face content ---- */
+.ticket-back-inner {
+  padding: 11px 14px 14px;
+}
+
+.ticket-back-flip {
+  position: absolute;
+  top: 7px;
+  right: 10px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 14px;
+  color: #a59a89;
+  line-height: 1;
+  padding: 2px 4px;
+  transition: color 0.12s ease;
+}
+
+.ticket-back-flip:hover {
+  color: var(--ink);
+}
+
+.ticket-back-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 8px;
+  margin-bottom: 10px;
+  padding-right: 20px;
+}
+
+.ticket-back-title {
+  font-family: var(--font-serif), Georgia, serif;
+  font-weight: 700;
+  font-size: 15px;
+  line-height: 1.15;
+  color: var(--ink);
+}
+
+.ticket-back-serial {
+  font-size: 8px;
+  letter-spacing: 0.14em;
+  font-weight: 600;
+  white-space: nowrap;
+  padding-top: 2px;
+}
+
+.ticket-back-form label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 6px;
+}
+
+.ticket-back-form label span {
+  font-size: 7px;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: #a59a89;
+  margin-bottom: 3px;
+}
+
+.ticket-back-form input {
+  font-family: var(--font-mono), monospace;
+  font-size: 10px;
+  color: var(--ink);
+  background: rgba(36, 31, 26, 0.05);
+  border: 1px solid rgba(36, 31, 26, 0.18);
+  border-radius: 3px;
+  padding: 5px 7px;
+  outline: none;
+  width: 100%;
+  transition: border-color 0.12s ease;
+}
+
+.ticket-back-form input:focus {
+  border-color: var(--back-accent, #a8742f);
+  background: #fff;
+}
+
+.ticket-back-actions {
+  display: flex;
+  gap: 7px;
+  margin-top: 10px;
+}
+
+.ticket-back-save {
+  flex: 1;
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: none;
+  border-radius: 3px;
+  padding: 7px;
+  cursor: pointer;
+  background: linear-gradient(180deg, #f1d79b 0%, #d9a85f 100%);
+  color: #2a1206;
+  transition: filter 0.12s ease;
+}
+
+.ticket-back-save:hover {
+  filter: brightness(1.06);
+}
+
+.ticket-back-save:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.ticket-back-delete {
+  font-family: var(--font-mono), monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  border: 1px solid rgba(150, 40, 24, 0.3);
+  border-radius: 3px;
+  padding: 7px 10px;
+  cursor: pointer;
+  background: transparent;
+  color: #8b2618;
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.ticket-back-delete:hover {
   background: rgba(150, 40, 24, 0.85);
   color: #fff;
+  border-color: transparent;
+}
+
+.ticket-back-delete:disabled {
+  opacity: 0.55;
+  cursor: default;
 }
 
 /* ---- detail / log panel ---- */

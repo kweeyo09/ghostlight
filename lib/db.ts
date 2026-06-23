@@ -87,6 +87,21 @@ export async function addVisit(v: LoggedVisit): Promise<LoggedVisit> {
   return v;
 }
 
+export async function updateVisit(
+  id: string,
+  updates: { theatre: string; date: string; seat: string }
+): Promise<void> {
+  await ensureTable();
+  const q = await sql();
+  await q`
+    UPDATE visits
+    SET theatre = ${updates.theatre},
+        date    = ${updates.date},
+        seat    = ${updates.seat}
+    WHERE id = ${id}
+  `;
+}
+
 export async function deleteVisit(id: string): Promise<void> {
   await ensureTable();
   const q = await sql();
